@@ -1,0 +1,52 @@
+%h1 Chores for the week of #{days.first.strftime "%B #{days.first.day.ordinalize}, %Y"}
+
+%table.table.table-striped.table-responsive
+  %thead
+    %tr
+      %th Chore
+      - days.each do |day|
+        %th= day.strftime("%A")
+
+  %tbody
+    - chores.each do |chore|
+      %tr
+        %th
+          = chore.name
+          %small (#{number_to_currency chore.rate, precision: 0})
+        - if Chore.week_paid?(payday)
+          - days.each do |day|
+            %td.chore
+              - if chore.completed_for?(day)
+                %i(class="fa fa-check")
+        - else
+          - days.each do |day|
+            %td.chore
+              - if chore.completed_for?(day)
+                = button_to uncomplete_chore_path(chore, day: day), method: :delete do
+                  %i(class="fa fa-check")
+              - else
+                = button_to "&nbsp;".html_safe, complete_chore_path(chore, day: day)
+
+%h2
+  Total Income: #{number_to_currency total}
+
+- if Chore.week_paid?(payday)
+  %h3 Paid!
+- else
+  = form_tag payments_path do
+    = hidden_field_tag "week", payday.cweek
+    = hidden_field_tag "year", payday.cwyear
+    = hidden_field_tag "amount", total
+
+    = submit_tag "Pay Me!", class: "btn btn-success"
+
+%p
+  = link_to root_path(today: 1.week.ago(today).to_date) do
+    %i(class="fa fa-backward")
+    Previous week
+
+  &nbsp;
+
+  = link_to root_path(today: 1.week.from_now(today).to_date) do
+    Next Week
+    %i(class="fa fa-forward")
