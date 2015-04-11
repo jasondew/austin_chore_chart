@@ -27,26 +27,17 @@
               - else
                 = button_to "&nbsp;".html_safe, complete_chore_path(chore, day: day)
 
-%h2
-  Total Income: #{number_to_currency total}
+.pull-left
+  %h2 Total Income: #{number_to_currency total}
 
-- if Chore.week_paid?(payday)
-  %h3 Paid!
-- else
-  = form_tag payments_path do
-    = hidden_field_tag "week", payday.cweek
-    = hidden_field_tag "year", payday.cwyear
-    = hidden_field_tag "amount", total
+.pull-right
+  - if Chore.week_paid?(payday)
+    %h3 Paid!
+  - else
+    %p
+      = form_tag payments_path do
+        = hidden_field_tag "week", payday.cweek
+        = hidden_field_tag "year", payday.cwyear
+        = hidden_field_tag "amount", total
 
-    = submit_tag "Pay Me!", class: "btn btn-success"
-
-%p
-  = link_to root_path(today: 1.week.ago(today).to_date) do
-    %i(class="fa fa-backward")
-    Previous week
-
-  &nbsp;
-
-  = link_to root_path(today: 1.week.from_now(today).to_date) do
-    Next Week
-    %i(class="fa fa-forward")
+        = submit_tag "Pay Me!", class: "btn btn-success"

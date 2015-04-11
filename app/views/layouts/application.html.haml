@@ -2,12 +2,28 @@
 
 %html
   %head
-    %title Austin"s Chore Chart
+    %title Austin's Chore Chart
     = stylesheet_link_tag "application", media: "all"
     = javascript_include_tag "application"
     = csrf_meta_tags
 
   %body
+    %nav.navbar.navbar-default
+      .container-fluid
+        .navbar-header
+          .navbar-brand= link_to "Austin's Chores", root_path
+
+        %ul.nav.navbar-nav.navbar-right
+          %li
+            = link_to root_path(today: 1.week.ago(today).to_date) do
+              %i(class="fa fa-backward")
+              Previous week
+
+          %li
+            = link_to root_path(today: 1.week.from_now(today).to_date) do
+              Next Week
+              %i(class="fa fa-forward")
+
     .container
       - flash.each do |type, message|
         %div{class: "alert alert-success"}
