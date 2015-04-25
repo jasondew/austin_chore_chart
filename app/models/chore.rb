@@ -1,4 +1,6 @@
 class Chore < ActiveRecord::Base
+  belongs_to :child
+
   has_many :completed_chores
 
   def self.week_paid?(day)

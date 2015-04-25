@@ -1,4 +1,6 @@
 class ChartsController < ApplicationController
+  include Authentication
+
   def show
   end
 

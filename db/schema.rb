@@ -11,9 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150410193716) do
+ActiveRecord::Schema.define(version: 20150425141211) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "children", force: :cascade do |t|
+    t.integer  "parent_id"
+    t.string   "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "chores", force: :cascade do |t|
+    t.integer  "child_id"
     t.string   "name"
     t.integer  "rate"
     t.text     "notes"
@@ -22,12 +33,20 @@ ActiveRecord::Schema.define(version: 20150410193716) do
   end
 
   create_table "completed_chores", force: :cascade do |t|
+    t.integer  "child_id"
     t.integer  "chore_id"
     t.date     "completed_on"
     t.datetime "created_at",   null: false
   end
 
+  create_table "parents", force: :cascade do |t|
+    t.string   "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "payments", force: :cascade do |t|
+    t.integer  "child_id"
     t.integer  "week"
     t.integer  "year"
     t.integer  "amount"
