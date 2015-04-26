@@ -1,4 +1,8 @@
 class ChoresController < ApplicationController
+  def index
+    render json: Chore.all
+  end
+
   def complete
     CompletedChore.create! chore_id: params[:id], completed_on: params[:day]
     redirect_to root_path, notice: praise.sample
