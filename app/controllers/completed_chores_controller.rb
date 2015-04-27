@@ -1,4 +1,8 @@
 class CompletedChoresController < ApplicationController
+  def index
+    render json: CompletedChore.all
+  end
+
   def create
     completed_chore = CompletedChore.new attributes
 
