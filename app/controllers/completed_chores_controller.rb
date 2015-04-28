@@ -1,6 +1,6 @@
 class CompletedChoresController < ApplicationController
   def index
-    render json: CompletedChore.all
+    render json: CompletedChore.where(chore_id: params[:chore_id], completed_on: params[:completed_on])
   end
 
   def create
@@ -14,7 +14,7 @@ class CompletedChoresController < ApplicationController
   end
 
   def destroy
-    completed_chore = CompletedChore.find_by(chore_id: params[:id], completed_on: params[:day])
+    completed_chore = CompletedChore.find params[:id]
 
     if completed_chore.destroy
       render json: completed_chore
