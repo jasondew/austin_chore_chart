@@ -1,11 +1,3 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
-#
-# Examples:
-#
-#   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
-#   Mayor.create(name: 'Emanuel', city: cities.first)
-
 Parent.create [
   {id: 1, name: "Jason"}
 ]
@@ -38,3 +30,7 @@ CompletedChore.create [
   {child_id: 1, chore_id: 5, completed_on: 3.days.ago},
   {child_id: 1, chore_id: 5, completed_on: 1.days.ago}
 ]
+
+%w{parents children chores completed_chores}.each do |table_name|
+  ActiveRecord::Base.connection.reset_pk_sequence! table_name
+end
