@@ -65,7 +65,7 @@ update action model =
 
 fetchState : Effects Action
 fetchState =
-  Http.get decodeState "http://childwork-api.dev/chores.json"
+  Http.get decodeState "/chores.json"
   |> Task.toMaybe
   |> Task.map Display
   |> Effects.task

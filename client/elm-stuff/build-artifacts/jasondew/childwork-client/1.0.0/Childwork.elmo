@@ -196,7 +196,7 @@ Elm.Childwork.make = function (_elm) {
    }();
    var fetchState = $Effects.task($Task.map(Display)($Task.toMaybe(A2($Http.get,
    decodeState,
-   "http://childwork-api.dev/chores.json"))));
+   "/chores.json"))));
    var Model = function (a) {
       return {_: {}
              ,completedChores: a};
