@@ -1,0 +1,246 @@
+Elm.Childwork = Elm.Childwork || {};
+Elm.Childwork.make = function (_elm) {
+   "use strict";
+   _elm.Childwork = _elm.Childwork || {};
+   if (_elm.Childwork.values)
+   return _elm.Childwork.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Childwork",
+   $Basics = Elm.Basics.make(_elm),
+   $Date = Elm.Date.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var monthNumber = function (month) {
+      return function () {
+         switch (month.ctor)
+         {case "Apr": return 4;
+            case "Aug": return 8;
+            case "Dec": return 12;
+            case "Feb": return 2;
+            case "Jan": return 1;
+            case "Jul": return 7;
+            case "Jun": return 6;
+            case "Mar": return 3;
+            case "May": return 5;
+            case "Nov": return 11;
+            case "Oct": return 10;
+            case "Sep": return 9;}
+         _U.badCase($moduleName,
+         "between lines 137 and 149");
+      }();
+   };
+   var formatDate = function (date) {
+      return function () {
+         var day = $Date.day(date);
+         var month = monthNumber($Date.month(date));
+         var year = $Date.year(date);
+         return A2($Basics._op["++"],
+         $Basics.toString(year),
+         A2($Basics._op["++"],
+         "-",
+         A2($Basics._op["++"],
+         A2($String.padLeft,
+         2,
+         _U.chr("0"))($Basics.toString(month)),
+         A2($Basics._op["++"],
+         "-",
+         A2($String.padLeft,
+         2,
+         _U.chr("0"))($Basics.toString(day))))));
+      }();
+   };
+   var completedChoreRow = function (completedChore) {
+      return A2($Html.tr,
+      _L.fromArray([]),
+      _L.fromArray([A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text(completedChore.chore.name)]))
+                   ,A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text(A2($Basics._op["++"],
+                   "$",
+                   $Basics.toString(completedChore.chore.rate)))]))
+                   ,A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text(formatDate(completedChore.completedOn))]))
+                   ,A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text($Maybe.withDefault("")(A2($Maybe.map,
+                   formatDate,
+                   completedChore.paidOn)))]))]));
+   };
+   var completedChoreRows = function (model) {
+      return $List.map(completedChoreRow)(A2($List.sortBy,
+      function ($) {
+         return formatDate(function (_) {
+            return _.completedOn;
+         }($));
+      },
+      model.completedChores));
+   };
+   var totalRow = function (model) {
+      return function () {
+         var total = $List.sum($List.map(function (_) {
+            return _.rate;
+         })(A2($List.map,
+         function (_) {
+            return _.chore;
+         },
+         model.completedChores)));
+         return A2($Html.tr,
+         _L.fromArray([]),
+         _L.fromArray([A2($Html.td,
+                      _L.fromArray([]),
+                      _L.fromArray([$Html.text("Total")]))
+                      ,A2($Html.td,
+                      _L.fromArray([]),
+                      _L.fromArray([$Html.text(A2($Basics._op["++"],
+                      "$",
+                      $Basics.toString(total)))]))
+                      ,A2($Html.td,
+                      _L.fromArray([]),
+                      _L.fromArray([$Html.text("")]))]));
+      }();
+   };
+   var view = F2(function (address,
+   model) {
+      return $Html.table(_L.fromArray([]))(A2($Basics._op["++"],
+      _L.fromArray([A2($Html.tr,
+      _L.fromArray([]),
+      _L.fromArray([A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text("Chore")]))
+                   ,A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text("Rate")]))
+                   ,A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text("Completed On")]))
+                   ,A2($Html.td,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text("Paid On")]))]))]),
+      A2($Basics._op["++"],
+      completedChoreRows(model),
+      _L.fromArray([totalRow(model)]))));
+   });
+   var date = A2($Json$Decode.customDecoder,
+   $Json$Decode.string,
+   $Date.fromString);
+   var Display = function (a) {
+      return {ctor: "Display"
+             ,_0: a};
+   };
+   var CompletedChore = F4(function (a,
+   b,
+   c,
+   d) {
+      return {_: {}
+             ,chore: b
+             ,completedOn: c
+             ,id: a
+             ,paidOn: d};
+   });
+   var Chore = F4(function (a,
+   b,
+   c,
+   d) {
+      return {_: {}
+             ,id: a
+             ,name: b
+             ,notes: d
+             ,rate: c};
+   });
+   var decodeState = function () {
+      var chore = A5($Json$Decode.object4,
+      Chore,
+      A2($Json$Decode._op[":="],
+      "id",
+      $Json$Decode.$int),
+      A2($Json$Decode._op[":="],
+      "name",
+      $Json$Decode.string),
+      A2($Json$Decode._op[":="],
+      "rate",
+      $Json$Decode.$int),
+      $Json$Decode.maybe(A2($Json$Decode._op[":="],
+      "notes",
+      $Json$Decode.string)));
+      var completedChore = A5($Json$Decode.object4,
+      CompletedChore,
+      A2($Json$Decode._op[":="],
+      "id",
+      $Json$Decode.$int),
+      A2($Json$Decode._op[":="],
+      "chore",
+      chore),
+      A2($Json$Decode._op[":="],
+      "completed_on",
+      date),
+      $Json$Decode.maybe(A2($Json$Decode._op[":="],
+      "paid_on",
+      date)));
+      return A2($Json$Decode._op[":="],
+      "completed_chores",
+      $Json$Decode.list(completedChore));
+   }();
+   var fetchState = $Effects.task($Task.map(Display)($Task.toMaybe(A2($Http.get,
+   decodeState,
+   "http://childwork-api.dev/chores.json"))));
+   var Model = function (a) {
+      return {_: {}
+             ,completedChores: a};
+   };
+   var init = {ctor: "_Tuple2"
+              ,_0: Model(_L.fromArray([]))
+              ,_1: fetchState};
+   var update = F2(function (action,
+   model) {
+      return function () {
+         switch (action.ctor)
+         {case "Display":
+            return function () {
+                 switch (action._0.ctor)
+                 {case "Just":
+                    return {ctor: "_Tuple2"
+                           ,_0: Model(action._0._0)
+                           ,_1: $Effects.none};
+                    case "Nothing":
+                    return {ctor: "_Tuple2"
+                           ,_0: Model(_L.fromArray([]))
+                           ,_1: $Effects.none};}
+                 _U.badCase($moduleName,
+                 "between lines 59 and 62");
+              }();}
+         _U.badCase($moduleName,
+         "between lines 57 and 62");
+      }();
+   });
+   _elm.Childwork.values = {_op: _op
+                           ,Model: Model
+                           ,Chore: Chore
+                           ,CompletedChore: CompletedChore
+                           ,Display: Display
+                           ,init: init
+                           ,update: update
+                           ,fetchState: fetchState
+                           ,decodeState: decodeState
+                           ,date: date
+                           ,view: view
+                           ,totalRow: totalRow
+                           ,completedChoreRows: completedChoreRows
+                           ,completedChoreRow: completedChoreRow
+                           ,formatDate: formatDate
+                           ,monthNumber: monthNumber};
+   return _elm.Childwork.values;
+};

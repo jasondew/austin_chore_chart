@@ -1,0 +1,31 @@
+Elm.Tests = Elm.Tests || {};
+Elm.Tests.make = function (_elm) {
+   "use strict";
+   _elm.Tests = _elm.Tests || {};
+   if (_elm.Tests.values)
+   return _elm.Tests.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Tests",
+   $Basics = Elm.Basics.make(_elm),
+   $ElmTest$Assertion = Elm.ElmTest.Assertion.make(_elm),
+   $ElmTest$Test = Elm.ElmTest.Test.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var test_one = A2($ElmTest$Assertion.assertEqual,
+   "foo",
+   "foo");
+   var all = A2($ElmTest$Test.suite,
+   "",
+   _L.fromArray([A2($ElmTest$Test.test,
+   "",
+   test_one)]));
+   _elm.Tests.values = {_op: _op
+                       ,all: all
+                       ,test_one: test_one};
+   return _elm.Tests.values;
+};
