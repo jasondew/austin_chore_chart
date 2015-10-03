@@ -65,7 +65,7 @@ update action model =
 
 fetchState : Effects Action
 fetchState =
-  Http.get decodeState "/chores.json"
+  Http.get decodeState "http://childwork-api.herokuapp.com/chores.json"
   |> Task.toMaybe
   |> Task.map Display
   |> Effects.task
@@ -91,43 +91,49 @@ date = Json.customDecoder Json.string Date.fromString
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  Html.table [] <| [
-    Html.tr [] [
-      Html.td [] [Html.text "Chore"],
-      Html.td [] [Html.text "Rate"],
-      Html.td [] [Html.text "Completed On"],
-      Html.td [] [Html.text "Paid On"]
-    ]
-  ] ++ (completedChoreRows model) ++ [totalRow model]
+  let unpaidChores = List.filter unpaid model.completedChores
+  in
+    Html.table [] <| [
+      Html.tr [] [
+        Html.td [] [Html.text "Chore"],
+        Html.td [] [Html.text "Rate"],
+        Html.td [] [Html.text "Completed On"]
+      ]
+    ] ++ (completedChoreRows unpaidChores) ++ [totalRow unpaidChores]
 
-totalRow : Model -> Html
-totalRow model =
-  let total = List.sum <| List.map .rate <| List.map .chore model.completedChores
+totalRow : CompletedChores -> Html
+totalRow completedChores =
+  let total = List.sum <| List.map .rate <| List.map .chore completedChores
   in Html.tr [] [
        Html.td [] [Html.text "Total"],
        Html.td [] [Html.text <| "$" ++ (toString total)],
        Html.td [] [Html.text ""]
      ]
 
-completedChoreRows : Model -> List Html
-completedChoreRows model =
+unpaid : CompletedChore -> Bool
+unpaid completedChore =
+  case completedChore.paidOn of
+    Just _  -> False
+    Nothing -> True
+
+completedChoreRows : CompletedChores -> List Html
+completedChoreRows completedChores =
   List.map completedChoreRow
-  <| List.sortBy (formatDate << .completedOn) model.completedChores
+  <| List.sortBy (formatDate << .completedOn) completedChores
 
 completedChoreRow : CompletedChore -> Html
 completedChoreRow completedChore =
   Html.tr [] [
     Html.td [] [Html.text <| completedChore.chore.name],
     Html.td [] [Html.text <| "$" ++ (toString completedChore.chore.rate)],
-    Html.td [] [Html.text <| formatDate completedChore.completedOn],
-    Html.td [] [Html.text <| Maybe.withDefault "" <| Maybe.map formatDate completedChore.paidOn]
+    Html.td [] [Html.text <| formatDate completedChore.completedOn]
   ]
 
 formatDate : Date -> String
 formatDate date =
   let year  = Date.year date
       month = monthNumber <| Date.month date
-      day   = Date.day date
+      day   = Date.day date + 1
   in (toString year) ++ "-" ++
      (String.padLeft 2 '0' <| toString month) ++ "-" ++
      (String.padLeft 2 '0' <| toString day)

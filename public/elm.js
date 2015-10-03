@@ -373,12 +373,12 @@ Elm.Childwork.make = function (_elm) {
             case "Oct": return 10;
             case "Sep": return 9;}
          _U.badCase($moduleName,
-         "between lines 137 and 149");
+         "between lines 143 and 155");
       }();
    };
    var formatDate = function (date) {
       return function () {
-         var day = $Date.day(date);
+         var day = $Date.day(date) + 1;
          var month = monthNumber($Date.month(date));
          var year = $Date.year(date);
          return A2($Basics._op["++"],
@@ -409,23 +409,28 @@ Elm.Childwork.make = function (_elm) {
                    $Basics.toString(completedChore.chore.rate)))]))
                    ,A2($Html.td,
                    _L.fromArray([]),
-                   _L.fromArray([$Html.text(formatDate(completedChore.completedOn))]))
-                   ,A2($Html.td,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text($Maybe.withDefault("")(A2($Maybe.map,
-                   formatDate,
-                   completedChore.paidOn)))]))]));
+                   _L.fromArray([$Html.text(formatDate(completedChore.completedOn))]))]));
    };
-   var completedChoreRows = function (model) {
+   var completedChoreRows = function (completedChores) {
       return $List.map(completedChoreRow)(A2($List.sortBy,
       function ($) {
          return formatDate(function (_) {
             return _.completedOn;
          }($));
       },
-      model.completedChores));
+      completedChores));
    };
-   var totalRow = function (model) {
+   var unpaid = function (completedChore) {
+      return function () {
+         var _v1 = completedChore.paidOn;
+         switch (_v1.ctor)
+         {case "Just": return false;
+            case "Nothing": return true;}
+         _U.badCase($moduleName,
+         "between lines 115 and 117");
+      }();
+   };
+   var totalRow = function (completedChores) {
       return function () {
          var total = $List.sum($List.map(function (_) {
             return _.rate;
@@ -433,7 +438,7 @@ Elm.Childwork.make = function (_elm) {
          function (_) {
             return _.chore;
          },
-         model.completedChores)));
+         completedChores)));
          return A2($Html.tr,
          _L.fromArray([]),
          _L.fromArray([A2($Html.td,
@@ -451,24 +456,26 @@ Elm.Childwork.make = function (_elm) {
    };
    var view = F2(function (address,
    model) {
-      return $Html.table(_L.fromArray([]))(A2($Basics._op["++"],
-      _L.fromArray([A2($Html.tr,
-      _L.fromArray([]),
-      _L.fromArray([A2($Html.td,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text("Chore")]))
-                   ,A2($Html.td,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text("Rate")]))
-                   ,A2($Html.td,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text("Completed On")]))
-                   ,A2($Html.td,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text("Paid On")]))]))]),
-      A2($Basics._op["++"],
-      completedChoreRows(model),
-      _L.fromArray([totalRow(model)]))));
+      return function () {
+         var unpaidChores = A2($List.filter,
+         unpaid,
+         model.completedChores);
+         return $Html.table(_L.fromArray([]))(A2($Basics._op["++"],
+         _L.fromArray([A2($Html.tr,
+         _L.fromArray([]),
+         _L.fromArray([A2($Html.td,
+                      _L.fromArray([]),
+                      _L.fromArray([$Html.text("Chore")]))
+                      ,A2($Html.td,
+                      _L.fromArray([]),
+                      _L.fromArray([$Html.text("Rate")]))
+                      ,A2($Html.td,
+                      _L.fromArray([]),
+                      _L.fromArray([$Html.text("Completed On")]))]))]),
+         A2($Basics._op["++"],
+         completedChoreRows(unpaidChores),
+         _L.fromArray([totalRow(unpaidChores)]))));
+      }();
    });
    var date = A2($Json$Decode.customDecoder,
    $Json$Decode.string,
@@ -532,7 +539,7 @@ Elm.Childwork.make = function (_elm) {
    }();
    var fetchState = $Effects.task($Task.map(Display)($Task.toMaybe(A2($Http.get,
    decodeState,
-   "/chores.json"))));
+   "http://childwork-api.herokuapp.com/chores.json"))));
    var Model = function (a) {
       return {_: {}
              ,completedChores: a};
@@ -574,6 +581,7 @@ Elm.Childwork.make = function (_elm) {
                            ,date: date
                            ,view: view
                            ,totalRow: totalRow
+                           ,unpaid: unpaid
                            ,completedChoreRows: completedChoreRows
                            ,completedChoreRow: completedChoreRow
                            ,formatDate: formatDate
