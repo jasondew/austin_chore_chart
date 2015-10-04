@@ -1,7 +1,8 @@
 module Childwork where
 
 import Html exposing (Html)
-import Html.Attributes as Attributes
+import Html.Attributes as Attributes exposing (id, class)
+import Html.Events as Events exposing (onClick)
 import Effects exposing (Effects)
 import Signal exposing (Signal)
 import Http
@@ -40,6 +41,7 @@ type alias CompletedChores = List CompletedChore
 
 type Action =
   Display (Maybe CompletedChores)
+  | PayOut
 
 -- INIT --
 
@@ -60,12 +62,14 @@ update action model =
         Just completedChores ->
           (Model completedChores, Effects.none)
         Nothing -> (Model [], Effects.none)
+    PayOut ->
+      (model, fetchState)
 
 -- EFFECTS --
 
 fetchState : Effects Action
 fetchState =
-  Http.get decodeState "http://childwork-api.herokuapp.com/chores.json"
+  Http.get decodeState "/chores.json"
   |> Task.toMaybe
   |> Task.map Display
   |> Effects.task
@@ -91,23 +95,38 @@ date = Json.customDecoder Json.string Date.fromString
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  let unpaidChores = List.filter unpaid model.completedChores
-  in
-    Html.table [] <| [
-      Html.tr [] [
-        Html.td [] [Html.text "Chore"],
-        Html.td [] [Html.text "Rate"],
-        Html.td [] [Html.text "Completed On"]
-      ]
-    ] ++ (completedChoreRows unpaidChores) ++ [totalRow unpaidChores]
+  Html.div [id "content", class "row"] [
+    Html.div [class "col-md-4 col-md-offset-4"] [
+      unpaidChoresTable address model.completedChores
+    ]
+  ]
 
-totalRow : CompletedChores -> Html
-totalRow completedChores =
+unpaidChoresTable : Signal.Address Action -> CompletedChores -> Html
+unpaidChoresTable address completedChores =
+  let unpaidChores = List.filter unpaid completedChores
+  in
+    Html.div [class "panel panel-default panel-primary"] [
+      Html.div [class "panel-heading"] [Html.text "Unpaid Chores"],
+      Html.table [class "table table-striped table-responsive"] <| [
+        Html.thead [] [
+          Html.tr [] [
+            Html.th [] [Html.text "Chore"],
+            Html.th [] [Html.text "Rate"],
+            Html.th [] [Html.text "Completed On"]
+          ]
+        ],
+        Html.tbody []
+        <| (completedChoreRows unpaidChores) ++ [totalRow address unpaidChores]
+      ]
+    ]
+
+totalRow : Signal.Address Action -> CompletedChores -> Html
+totalRow address completedChores =
   let total = List.sum <| List.map .rate <| List.map .chore completedChores
   in Html.tr [] [
-       Html.td [] [Html.text "Total"],
-       Html.td [] [Html.text <| "$" ++ (toString total)],
-       Html.td [] [Html.text ""]
+       Html.th [] [Html.text "Total"],
+       Html.td [class "text-right"] [Html.text <| formatMoney total],
+       Html.td [] [Html.button [onClick address PayOut] [Html.text "Pay out"]]
      ]
 
 unpaid : CompletedChore -> Bool
@@ -123,11 +142,15 @@ completedChoreRows completedChores =
 
 completedChoreRow : CompletedChore -> Html
 completedChoreRow completedChore =
-  Html.tr [] [
+  Html.tr [Attributes.key <| toString completedChore.id] [
     Html.td [] [Html.text <| completedChore.chore.name],
-    Html.td [] [Html.text <| "$" ++ (toString completedChore.chore.rate)],
+    Html.td [class "text-right"] [Html.text <| formatMoney completedChore.chore.rate],
     Html.td [] [Html.text <| formatDate completedChore.completedOn]
   ]
+
+formatMoney : Int -> String
+formatMoney value =
+  "$" ++ (toString value)
 
 formatDate : Date -> String
 formatDate date =

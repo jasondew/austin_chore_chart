@@ -349,6 +349,8 @@ Elm.Childwork.make = function (_elm) {
    $Date = Elm.Date.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -373,7 +375,7 @@ Elm.Childwork.make = function (_elm) {
             case "Oct": return 10;
             case "Sep": return 9;}
          _U.badCase($moduleName,
-         "between lines 143 and 155");
+         "between lines 166 and 178");
       }();
    };
    var formatDate = function (date) {
@@ -396,17 +398,20 @@ Elm.Childwork.make = function (_elm) {
          _U.chr("0"))($Basics.toString(day))))));
       }();
    };
+   var formatMoney = function (value) {
+      return A2($Basics._op["++"],
+      "$",
+      $Basics.toString(value));
+   };
    var completedChoreRow = function (completedChore) {
       return A2($Html.tr,
-      _L.fromArray([]),
+      _L.fromArray([$Html$Attributes.key($Basics.toString(completedChore.id))]),
       _L.fromArray([A2($Html.td,
                    _L.fromArray([]),
                    _L.fromArray([$Html.text(completedChore.chore.name)]))
                    ,A2($Html.td,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text(A2($Basics._op["++"],
-                   "$",
-                   $Basics.toString(completedChore.chore.rate)))]))
+                   _L.fromArray([$Html$Attributes.$class("text-right")]),
+                   _L.fromArray([$Html.text(formatMoney(completedChore.chore.rate))]))
                    ,A2($Html.td,
                    _L.fromArray([]),
                    _L.fromArray([$Html.text(formatDate(completedChore.completedOn))]))]));
@@ -427,10 +432,15 @@ Elm.Childwork.make = function (_elm) {
          {case "Just": return false;
             case "Nothing": return true;}
          _U.badCase($moduleName,
-         "between lines 115 and 117");
+         "between lines 134 and 136");
       }();
    };
-   var totalRow = function (completedChores) {
+   var date = A2($Json$Decode.customDecoder,
+   $Json$Decode.string,
+   $Date.fromString);
+   var PayOut = {ctor: "PayOut"};
+   var totalRow = F2(function (address,
+   completedChores) {
       return function () {
          var total = $List.sum($List.map(function (_) {
             return _.rate;
@@ -441,45 +451,63 @@ Elm.Childwork.make = function (_elm) {
          completedChores)));
          return A2($Html.tr,
          _L.fromArray([]),
-         _L.fromArray([A2($Html.td,
+         _L.fromArray([A2($Html.th,
                       _L.fromArray([]),
                       _L.fromArray([$Html.text("Total")]))
                       ,A2($Html.td,
-                      _L.fromArray([]),
-                      _L.fromArray([$Html.text(A2($Basics._op["++"],
-                      "$",
-                      $Basics.toString(total)))]))
+                      _L.fromArray([$Html$Attributes.$class("text-right")]),
+                      _L.fromArray([$Html.text(formatMoney(total))]))
                       ,A2($Html.td,
                       _L.fromArray([]),
-                      _L.fromArray([$Html.text("")]))]));
+                      _L.fromArray([A2($Html.button,
+                      _L.fromArray([A2($Html$Events.onClick,
+                      address,
+                      PayOut)]),
+                      _L.fromArray([$Html.text("Pay out")]))]))]));
       }();
-   };
-   var view = F2(function (address,
-   model) {
+   });
+   var unpaidChoresTable = F2(function (address,
+   completedChores) {
       return function () {
          var unpaidChores = A2($List.filter,
          unpaid,
-         model.completedChores);
-         return $Html.table(_L.fromArray([]))(A2($Basics._op["++"],
-         _L.fromArray([A2($Html.tr,
-         _L.fromArray([]),
-         _L.fromArray([A2($Html.td,
-                      _L.fromArray([]),
-                      _L.fromArray([$Html.text("Chore")]))
-                      ,A2($Html.td,
-                      _L.fromArray([]),
-                      _L.fromArray([$Html.text("Rate")]))
-                      ,A2($Html.td,
-                      _L.fromArray([]),
-                      _L.fromArray([$Html.text("Completed On")]))]))]),
-         A2($Basics._op["++"],
-         completedChoreRows(unpaidChores),
-         _L.fromArray([totalRow(unpaidChores)]))));
+         completedChores);
+         return A2($Html.div,
+         _L.fromArray([$Html$Attributes.$class("panel panel-default panel-primary")]),
+         _L.fromArray([A2($Html.div,
+                      _L.fromArray([$Html$Attributes.$class("panel-heading")]),
+                      _L.fromArray([$Html.text("Unpaid Chores")]))
+                      ,$Html.table(_L.fromArray([$Html$Attributes.$class("table table-striped table-responsive")]))(_L.fromArray([A2($Html.thead,
+                                                                                                                                 _L.fromArray([]),
+                                                                                                                                 _L.fromArray([A2($Html.tr,
+                                                                                                                                 _L.fromArray([]),
+                                                                                                                                 _L.fromArray([A2($Html.th,
+                                                                                                                                              _L.fromArray([]),
+                                                                                                                                              _L.fromArray([$Html.text("Chore")]))
+                                                                                                                                              ,A2($Html.th,
+                                                                                                                                              _L.fromArray([]),
+                                                                                                                                              _L.fromArray([$Html.text("Rate")]))
+                                                                                                                                              ,A2($Html.th,
+                                                                                                                                              _L.fromArray([]),
+                                                                                                                                              _L.fromArray([$Html.text("Completed On")]))]))]))
+                                                                                                                                 ,$Html.tbody(_L.fromArray([]))(A2($Basics._op["++"],
+                                                                                                                                 completedChoreRows(unpaidChores),
+                                                                                                                                 _L.fromArray([A2(totalRow,
+                                                                                                                                 address,
+                                                                                                                                 unpaidChores)])))]))]));
       }();
    });
-   var date = A2($Json$Decode.customDecoder,
-   $Json$Decode.string,
-   $Date.fromString);
+   var view = F2(function (address,
+   model) {
+      return A2($Html.div,
+      _L.fromArray([$Html$Attributes.id("content")
+                   ,$Html$Attributes.$class("row")]),
+      _L.fromArray([A2($Html.div,
+      _L.fromArray([$Html$Attributes.$class("col-md-4 col-md-offset-4")]),
+      _L.fromArray([A2(unpaidChoresTable,
+      address,
+      model.completedChores)]))]));
+   });
    var Display = function (a) {
       return {ctor: "Display"
              ,_0: a};
@@ -539,7 +567,7 @@ Elm.Childwork.make = function (_elm) {
    }();
    var fetchState = $Effects.task($Task.map(Display)($Task.toMaybe(A2($Http.get,
    decodeState,
-   "http://childwork-api.herokuapp.com/chores.json"))));
+   "/chores.json"))));
    var Model = function (a) {
       return {_: {}
              ,completedChores: a};
@@ -563,10 +591,14 @@ Elm.Childwork.make = function (_elm) {
                            ,_0: Model(_L.fromArray([]))
                            ,_1: $Effects.none};}
                  _U.badCase($moduleName,
-                 "between lines 59 and 62");
-              }();}
+                 "between lines 61 and 65");
+              }();
+            case "PayOut":
+            return {ctor: "_Tuple2"
+                   ,_0: model
+                   ,_1: fetchState};}
          _U.badCase($moduleName,
-         "between lines 57 and 62");
+         "between lines 59 and 66");
       }();
    });
    _elm.Childwork.values = {_op: _op
@@ -574,16 +606,19 @@ Elm.Childwork.make = function (_elm) {
                            ,Chore: Chore
                            ,CompletedChore: CompletedChore
                            ,Display: Display
+                           ,PayOut: PayOut
                            ,init: init
                            ,update: update
                            ,fetchState: fetchState
                            ,decodeState: decodeState
                            ,date: date
                            ,view: view
+                           ,unpaidChoresTable: unpaidChoresTable
                            ,totalRow: totalRow
                            ,unpaid: unpaid
                            ,completedChoreRows: completedChoreRows
                            ,completedChoreRow: completedChoreRow
+                           ,formatMoney: formatMoney
                            ,formatDate: formatDate
                            ,monthNumber: monthNumber};
    return _elm.Childwork.values;
@@ -4007,6 +4042,113 @@ Elm.Html.Attributes.make = function (_elm) {
                                  ,property: property
                                  ,attribute: attribute};
    return _elm.Html.Attributes.values;
+};
+Elm.Html = Elm.Html || {};
+Elm.Html.Events = Elm.Html.Events || {};
+Elm.Html.Events.make = function (_elm) {
+   "use strict";
+   _elm.Html = _elm.Html || {};
+   _elm.Html.Events = _elm.Html.Events || {};
+   if (_elm.Html.Events.values)
+   return _elm.Html.Events.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Html.Events",
+   $Basics = Elm.Basics.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $VirtualDom = Elm.VirtualDom.make(_elm);
+   var keyCode = A2($Json$Decode._op[":="],
+   "keyCode",
+   $Json$Decode.$int);
+   var targetChecked = A2($Json$Decode.at,
+   _L.fromArray(["target"
+                ,"checked"]),
+   $Json$Decode.bool);
+   var targetValue = A2($Json$Decode.at,
+   _L.fromArray(["target"
+                ,"value"]),
+   $Json$Decode.string);
+   var defaultOptions = $VirtualDom.defaultOptions;
+   var Options = F2(function (a,
+   b) {
+      return {_: {}
+             ,preventDefault: b
+             ,stopPropagation: a};
+   });
+   var onWithOptions = $VirtualDom.onWithOptions;
+   var on = $VirtualDom.on;
+   var messageOn = F3(function (name,
+   addr,
+   msg) {
+      return A3(on,
+      name,
+      $Json$Decode.value,
+      function (_v0) {
+         return function () {
+            return A2($Signal.message,
+            addr,
+            msg);
+         }();
+      });
+   });
+   var onClick = messageOn("click");
+   var onDoubleClick = messageOn("dblclick");
+   var onMouseMove = messageOn("mousemove");
+   var onMouseDown = messageOn("mousedown");
+   var onMouseUp = messageOn("mouseup");
+   var onMouseEnter = messageOn("mouseenter");
+   var onMouseLeave = messageOn("mouseleave");
+   var onMouseOver = messageOn("mouseover");
+   var onMouseOut = messageOn("mouseout");
+   var onBlur = messageOn("blur");
+   var onFocus = messageOn("focus");
+   var onSubmit = messageOn("submit");
+   var onKey = F3(function (name,
+   addr,
+   handler) {
+      return A3(on,
+      name,
+      keyCode,
+      function (code) {
+         return A2($Signal.message,
+         addr,
+         handler(code));
+      });
+   });
+   var onKeyUp = onKey("keyup");
+   var onKeyDown = onKey("keydown");
+   var onKeyPress = onKey("keypress");
+   _elm.Html.Events.values = {_op: _op
+                             ,onBlur: onBlur
+                             ,onFocus: onFocus
+                             ,onSubmit: onSubmit
+                             ,onKeyUp: onKeyUp
+                             ,onKeyDown: onKeyDown
+                             ,onKeyPress: onKeyPress
+                             ,onClick: onClick
+                             ,onDoubleClick: onDoubleClick
+                             ,onMouseMove: onMouseMove
+                             ,onMouseDown: onMouseDown
+                             ,onMouseUp: onMouseUp
+                             ,onMouseEnter: onMouseEnter
+                             ,onMouseLeave: onMouseLeave
+                             ,onMouseOver: onMouseOver
+                             ,onMouseOut: onMouseOut
+                             ,on: on
+                             ,onWithOptions: onWithOptions
+                             ,defaultOptions: defaultOptions
+                             ,targetValue: targetValue
+                             ,targetChecked: targetChecked
+                             ,keyCode: keyCode
+                             ,Options: Options};
+   return _elm.Html.Events.values;
 };
 Elm.Http = Elm.Http || {};
 Elm.Http.make = function (_elm) {
