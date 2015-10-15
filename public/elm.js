@@ -375,7 +375,7 @@ Elm.Childwork.make = function (_elm) {
             case "Oct": return 10;
             case "Sep": return 9;}
          _U.badCase($moduleName,
-         "between lines 166 and 178");
+         "between lines 182 and 194");
       }();
    };
    var formatDate = function (date) {
@@ -432,12 +432,20 @@ Elm.Childwork.make = function (_elm) {
          {case "Just": return false;
             case "Nothing": return true;}
          _U.badCase($moduleName,
-         "between lines 134 and 136");
+         "between lines 150 and 152");
       }();
    };
    var date = A2($Json$Decode.customDecoder,
    $Json$Decode.string,
    $Date.fromString);
+   var Refresh = {ctor: "Refresh"};
+   var payOut = $Effects.task($Task.map($Basics.always(Refresh))($Task.toMaybe(A2($Http.send,
+   $Http.defaultSettings,
+   {_: {}
+   ,body: $Http.empty
+   ,headers: _L.fromArray([])
+   ,url: "/pay-out"
+   ,verb: "POST"}))));
    var PayOut = {ctor: "PayOut"};
    var totalRow = F2(function (address,
    completedChores) {
@@ -591,14 +599,18 @@ Elm.Childwork.make = function (_elm) {
                            ,_0: Model(_L.fromArray([]))
                            ,_1: $Effects.none};}
                  _U.badCase($moduleName,
-                 "between lines 61 and 65");
+                 "between lines 62 and 66");
               }();
             case "PayOut":
             return {ctor: "_Tuple2"
                    ,_0: model
+                   ,_1: payOut};
+            case "Refresh":
+            return {ctor: "_Tuple2"
+                   ,_0: model
                    ,_1: fetchState};}
          _U.badCase($moduleName,
-         "between lines 59 and 66");
+         "between lines 60 and 69");
       }();
    });
    _elm.Childwork.values = {_op: _op
@@ -607,9 +619,11 @@ Elm.Childwork.make = function (_elm) {
                            ,CompletedChore: CompletedChore
                            ,Display: Display
                            ,PayOut: PayOut
+                           ,Refresh: Refresh
                            ,init: init
                            ,update: update
                            ,fetchState: fetchState
+                           ,payOut: payOut
                            ,decodeState: decodeState
                            ,date: date
                            ,view: view
@@ -4954,6 +4968,7 @@ Elm.Main.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Childwork = Elm.Childwork.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),

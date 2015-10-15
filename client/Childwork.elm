@@ -42,6 +42,7 @@ type alias CompletedChores = List CompletedChore
 type Action =
   Display (Maybe CompletedChores)
   | PayOut
+  | Refresh
 
 -- INIT --
 
@@ -63,6 +64,8 @@ update action model =
           (Model completedChores, Effects.none)
         Nothing -> (Model [], Effects.none)
     PayOut ->
+      (model, payOut)
+    Refresh ->
       (model, fetchState)
 
 -- EFFECTS --
@@ -73,6 +76,19 @@ fetchState =
   |> Task.toMaybe
   |> Task.map Display
   |> Effects.task
+
+payOut : Effects Action
+payOut =
+  Http.send Http.defaultSettings
+    { verb = "POST"
+    , headers = []
+    , url = "/pay-out"
+    , body = Http.empty
+    }
+  |> Task.toMaybe
+  |> Task.map (always Refresh)
+  |> Effects.task
+
 
 decodeState : Json.Decoder CompletedChores
 decodeState =

@@ -3,7 +3,13 @@ import StartApp
 import Task exposing (Task)
 import Effects
 import Signal
+import Html exposing (Html)
 
+app : {
+  html : Signal Html,
+  model : Signal Childwork.Model,
+  tasks : Signal (Task Effects.Never ())
+}
 app =
   StartApp.start {
     init = init,
@@ -12,6 +18,7 @@ app =
     inputs = []
   }
 
+main : Signal Html
 main =
   app.html
 

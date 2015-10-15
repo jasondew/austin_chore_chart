@@ -4,4 +4,6 @@ class CompletedChore < ActiveRecord::Base
 
   validates_presence_of :chore_id, :completed_on
   validates_uniqueness_of :completed_on, scope: [:child_id, :chore_id]
+
+  scope :unpaid, -> { where paid_on: nil }
 end
