@@ -1,0 +1,155 @@
+Elm.Childwork = Elm.Childwork || {};
+Elm.Childwork.make = function (_elm) {
+   "use strict";
+   _elm.Childwork = _elm.Childwork || {};
+   if (_elm.Childwork.values) return _elm.Childwork.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Date = Elm.Date.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var monthNumber = function (month) {
+      var _p0 = month;
+      switch (_p0.ctor)
+      {case "Jan": return 1;
+         case "Feb": return 2;
+         case "Mar": return 3;
+         case "Apr": return 4;
+         case "May": return 5;
+         case "Jun": return 6;
+         case "Jul": return 7;
+         case "Aug": return 8;
+         case "Sep": return 9;
+         case "Oct": return 10;
+         case "Nov": return 11;
+         default: return 12;}
+   };
+   var formatDate = function (date) {
+      var day = $Date.day(date) + 1;
+      var month = monthNumber($Date.month(date));
+      var year = $Date.year(date);
+      return A2($Basics._op["++"],
+      $Basics.toString(year),
+      A2($Basics._op["++"],
+      "-",
+      A2($Basics._op["++"],
+      A3($String.padLeft,2,_U.chr("0"),$Basics.toString(month)),
+      A2($Basics._op["++"],"-",A3($String.padLeft,2,_U.chr("0"),$Basics.toString(day))))));
+   };
+   var formatMoney = function (value) {    return A2($Basics._op["++"],"$",$Basics.toString(value));};
+   var completedChoreRow = function (completedChore) {
+      return A2($Html.tr,
+      _U.list([$Html$Attributes.key($Basics.toString(completedChore.id))]),
+      _U.list([A2($Html.td,_U.list([]),_U.list([$Html.text(completedChore.chore.name)]))
+              ,A2($Html.td,_U.list([$Html$Attributes.$class("text-right")]),_U.list([$Html.text(formatMoney(completedChore.chore.rate))]))
+              ,A2($Html.td,_U.list([]),_U.list([$Html.text(formatDate(completedChore.completedOn))]))]));
+   };
+   var completedChoreRows = function (completedChores) {
+      return A2($List.map,
+      completedChoreRow,
+      A2($List.sortBy,function (_p1) {    return formatDate(function (_) {    return _.completedOn;}(_p1));},completedChores));
+   };
+   var unpaid = function (completedChore) {    var _p2 = completedChore.paidOn;if (_p2.ctor === "Just") {    return false;} else {    return true;}};
+   var date = A2($Json$Decode.customDecoder,$Json$Decode.string,$Date.fromString);
+   var Refresh = {ctor: "Refresh"};
+   var payOut = $Effects.task(A2($Task.map,
+   $Basics.always(Refresh),
+   $Task.toMaybe(A2($Http.send,$Http.defaultSettings,{verb: "POST",headers: _U.list([]),url: "/pay-out",body: $Http.empty}))));
+   var PayOut = {ctor: "PayOut"};
+   var totalRow = F2(function (address,completedChores) {
+      var total = $List.sum(A2($List.map,function (_) {    return _.rate;},A2($List.map,function (_) {    return _.chore;},completedChores)));
+      return A2($Html.tr,
+      _U.list([]),
+      _U.list([A2($Html.th,_U.list([]),_U.list([$Html.text("Total")]))
+              ,A2($Html.td,_U.list([$Html$Attributes.$class("text-right")]),_U.list([$Html.text(formatMoney(total))]))
+              ,A2($Html.td,_U.list([]),_U.list([A2($Html.button,_U.list([A2($Html$Events.onClick,address,PayOut)]),_U.list([$Html.text("Pay out")]))]))]));
+   });
+   var unpaidChoresTable = F2(function (address,completedChores) {
+      var unpaidChores = A2($List.filter,unpaid,completedChores);
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("panel panel-default panel-primary")]),
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("panel-heading")]),_U.list([$Html.text("Unpaid Chores")]))
+              ,A2($Html.table,
+              _U.list([$Html$Attributes.$class("table table-striped table-responsive")]),
+              _U.list([A2($Html.thead,
+                      _U.list([]),
+                      _U.list([A2($Html.tr,
+                      _U.list([]),
+                      _U.list([A2($Html.th,_U.list([]),_U.list([$Html.text("Chore")]))
+                              ,A2($Html.th,_U.list([]),_U.list([$Html.text("Rate")]))
+                              ,A2($Html.th,_U.list([]),_U.list([$Html.text("Completed On")]))]))]))
+                      ,A2($Html.tbody,_U.list([]),A2($Basics._op["++"],completedChoreRows(unpaidChores),_U.list([A2(totalRow,address,unpaidChores)])))]))]));
+   });
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.id("content"),$Html$Attributes.$class("row")]),
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("col-md-4 col-md-offset-4")]),_U.list([A2(unpaidChoresTable,address,model.completedChores)]))]));
+   });
+   var Display = function (a) {    return {ctor: "Display",_0: a};};
+   var CompletedChore = F4(function (a,b,c,d) {    return {id: a,chore: b,completedOn: c,paidOn: d};});
+   var Chore = F4(function (a,b,c,d) {    return {id: a,name: b,rate: c,notes: d};});
+   var decodeState = function () {
+      var chore = A5($Json$Decode.object4,
+      Chore,
+      A2($Json$Decode._op[":="],"id",$Json$Decode.$int),
+      A2($Json$Decode._op[":="],"name",$Json$Decode.string),
+      A2($Json$Decode._op[":="],"rate",$Json$Decode.$int),
+      $Json$Decode.maybe(A2($Json$Decode._op[":="],"notes",$Json$Decode.string)));
+      var completedChore = A5($Json$Decode.object4,
+      CompletedChore,
+      A2($Json$Decode._op[":="],"id",$Json$Decode.$int),
+      A2($Json$Decode._op[":="],"chore",chore),
+      A2($Json$Decode._op[":="],"completed_on",date),
+      $Json$Decode.maybe(A2($Json$Decode._op[":="],"paid_on",date)));
+      return A2($Json$Decode._op[":="],"completed_chores",$Json$Decode.list(completedChore));
+   }();
+   var fetchState = $Effects.task(A2($Task.map,Display,$Task.toMaybe(A2($Http.get,decodeState,"/chores.json"))));
+   var Model = function (a) {    return {completedChores: a};};
+   var init = {ctor: "_Tuple2",_0: Model(_U.list([])),_1: fetchState};
+   var update = F2(function (action,model) {
+      var _p3 = action;
+      switch (_p3.ctor)
+      {case "Display": var _p4 = _p3._0;
+           if (_p4.ctor === "Just") {
+                 return {ctor: "_Tuple2",_0: Model(_p4._0),_1: $Effects.none};
+              } else {
+                 return {ctor: "_Tuple2",_0: Model(_U.list([])),_1: $Effects.none};
+              }
+         case "PayOut": return {ctor: "_Tuple2",_0: model,_1: payOut};
+         default: return {ctor: "_Tuple2",_0: model,_1: fetchState};}
+   });
+   return _elm.Childwork.values = {_op: _op
+                                  ,Model: Model
+                                  ,Chore: Chore
+                                  ,CompletedChore: CompletedChore
+                                  ,Display: Display
+                                  ,PayOut: PayOut
+                                  ,Refresh: Refresh
+                                  ,init: init
+                                  ,update: update
+                                  ,fetchState: fetchState
+                                  ,payOut: payOut
+                                  ,decodeState: decodeState
+                                  ,date: date
+                                  ,view: view
+                                  ,unpaidChoresTable: unpaidChoresTable
+                                  ,totalRow: totalRow
+                                  ,unpaid: unpaid
+                                  ,completedChoreRows: completedChoreRows
+                                  ,completedChoreRow: completedChoreRow
+                                  ,formatMoney: formatMoney
+                                  ,formatDate: formatDate
+                                  ,monthNumber: monthNumber};
+};
